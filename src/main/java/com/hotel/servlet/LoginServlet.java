@@ -11,11 +11,12 @@ import java.io.IOException;
 public class LoginServlet extends HttpServlet {
     private final AuthService authService = new AuthService();
 
+    @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         try {
             User user = authService.login(req.getParameter("email"), req.getParameter("password"));
             if (user == null) {
-                resp.sendRedirect(req.getContextPath() + "/login.jsp?error=Invalid+credentials");
+                resp.sendRedirect(req.getContextPath() + "/user/login.jsp?error=Invalid+credentials");
                 return;
             }
 
@@ -26,13 +27,15 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("user", user);
             session.setMaxInactiveInterval(30 * 60);
 
-            if ("ADMIN".equals(user.getRole()))
+            if ("ADMIN".equals(user.getRole())) {
                 resp.sendRedirect(req.getContextPath() + "/admin/dashboard.jsp");
-            else
+            } else {
                 resp.sendRedirect(req.getContextPath() + "/user/dashboard.jsp");
+            }
         } catch (Exception e) {
-            resp.sendRedirect(req.getContextPath() + "/login.?error=" +
-                    java.net.URLEncoder.encode(e.getMessage(), java.nio.charset.StandardCharsets.UTF_8));
+            // FIXED: Added leading slash and ".jsp" extension
+            resp.sendRedirect(req.getContextPath() + "/user/login.jsp?error=" +
+                    java.net.URLEncoder.encode(e.getMessage() != null ? e.getMessage() : "Login error", java.nio.charset.StandardCharsets.UTF_8));
         }
     }
 }
