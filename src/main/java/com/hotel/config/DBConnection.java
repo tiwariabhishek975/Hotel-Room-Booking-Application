@@ -7,27 +7,35 @@ import java.sql.SQLException;
 public final class DBConnection {
 
     private static final String URL =
-            "jdbc:mysql://localhost:3306/hotel_booking?useSSL=false&serverTimezone=UTC";
+            getEnv("DB_URL",
+                    "jdbc:mysql://localhost:3306/hotel_booking?useSSL=false&serverTimezone=UTC");
 
-    private static final String USER = "root";
+    private static final String USER =
+            getEnv("DB_USERNAME", "root");
 
     private static final String PASSWORD =
-            System.getenv("DB_PASSWORD");
+            getEnv("DB_PASSWORD", "YOUR_PASSWORD");
 
     private DBConnection() {
+    }
+
+    private static String getEnv(String key, String defaultValue) {
+        String value = System.getenv(key);
+
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+
+        return value;
     }
 
     public static Connection getConnection() throws SQLException {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-
-            System.out.println("MySQL JDBC Driver Loaded Successfully");
-
         } catch (ClassNotFoundException e) {
-
             throw new SQLException(
-                    "MySQL JDBC Driver NOT FOUND. Check mysql-connector-j dependency.",
+                    "MySQL JDBC Driver NOT FOUND.",
                     e
             );
         }
